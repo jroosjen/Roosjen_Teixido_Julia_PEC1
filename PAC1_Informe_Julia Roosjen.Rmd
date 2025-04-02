@@ -25,7 +25,7 @@ header-includes:
 - \setlength{\cftaftertoctitleskip}{0.5em}
 - \renewcommand{\contentsname}{\centering Contents}
 ---
-## Tabla de contenido
+
 ## Abstract
 
 En este informe se evaluan los efectos metabolómicos del trasplante de microbiota fecal (FMT) utilizando técnicas de análisis basadas en SummarizedExperiments. Estas herramientas permiten integrar y procesar datos metabolómicos de manera eficiente, facilitando la comparación entre muestras. Los resultados muestran que, aunque las medianas y rangos intercuartílicos de los niveles de metabolitos son similares, se identifica una disminución muy ligera de los niveles de los metabolitos del intestino despues de el FMT, junto a un aumento en la variabilidad metabólica. Este fenómeno sugiere respuestas individuales al FMT, lo que resalta su potencial para modificar perfiles metabólicos en función de las características específicas del receptor.
@@ -177,7 +177,7 @@ Para seguir con el analisis de los datos en este punto se ha realizado un proces
 processed <- PomaOutliers(normalized, outcome = "Transplantation")$data
 ```
 
-Una vez generado processed se generar el grafico de **análisis de componentes principales (PCA)** sobre los datos contenidos en el objeto `processed.` Este gráfico representa la variabilidad de los datos de metabolitos en dos dimensiones principales. Para generarlo se ha utilizado el siguiente enlace como referencia.[4]
+Una vez generado processed se generar el grafico de **análisis de componentes principales (PCA)** sobre los datos contenidos en el objeto `processed.` Este gráfico representa la variabilidad de los datos de metabolitos en dos dimensiones principales. Para generarlo se ha utilizado el siguiente enlace como referencia.[3]
 
 Para generar este gráfico, primero se crean los posibles valores de PCA. La función `prcomp()` se realiza el analisis de los componentes principales de PCA. Los componentes de PCA son obtenidos a partir de la matriz transpuesta (`t()`) de datos del `assay` del objeto `processed` (`assay(processed)`).
 
@@ -215,7 +215,7 @@ De nuevo, y siguiendo con lo comentado en los graficos anteriores, el grafico PC
 
 El trasplante de microbiota fecal (FMT) es una tecnica prometedora para restaurar la microbiota intestinal abordando problemas metabólicos y gastrointestinales.
 
-Los analísis gráficos realizados sugieren que el FMT genera cambios muy ligeros en el perfil metabólico aumentando la variabilidad después del trasplante. Este fenómeno refleja respuestas individuales al tratamiento, la cual cosa coincide con investigaciones previas al respecto.[5]
+Los analísis gráficos realizados sugieren que el FMT genera cambios muy ligeros en el perfil metabólico aumentando la variabilidad después del trasplante. Este fenómeno refleja respuestas individuales al tratamiento, la cual cosa coincide con investigaciones previas al respecto.[4]
 
 El aumento de esta variabilidad metabólica podría estar indicando una mayor plasticidad metabólica o ajustes individuales en respuesta a las nuevas condiciones. Este hecho es relevante en el tratamiento de enfermedades metabolicas: No obstante dado que los cambios son tan ligeros aún hay la necesidad de personalizar los tratamientos según las características específicas del receptor. 
 
@@ -284,17 +284,17 @@ save(se, file = "SummarizedExperiment_PAC1")
 
 ## Referencias
 
-[1] Enlace al repositorio Github para obtener los datos:
-<https://github.com/nutrimetabolomics/metaboData/tree/main/Datasets/2023-UGrX-4MetaboAnalystTutorial>
-
-[2] Enlace para más información sobre la FMT
+[1] Enlace para más información sobre la FMT
 <https://pmc.ncbi.nlm.nih.gov/articles/PMC4749851/>
 
-[3] Enlace para información sobre la generación de los gráficos y procesado de datos
+[2] Enlace para información sobre la generación de los gráficos y procesado de datos
 <https://bioconductor.org/packages/release/bioc/vignettes/POMA/inst/doc/POMA-workflow.html>
 
-[4] Enlace para la creación de PCA
+[3] Enlace para la creación de PCA
 <https://rpubs.com/cristina_gil/pca>
 
-[5] Enlace para más información sobre la FMT
+[4] Enlace para más información sobre la FMT
 <https://www.csic.es/es/actualidad-del-csic/determinan-las-claves-del-exito-del-trasplante-de-microbiota-intestinal-en-personas-con-sindrome-metabolico>
+
+[5] Enlace al repositorio Github para obtener los datos:
+<https://github.com/nutrimetabolomics/metaboData>
