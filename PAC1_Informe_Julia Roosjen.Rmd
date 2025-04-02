@@ -1,0 +1,260 @@
+---
+title: "PAC 1_Informe _Julia Roosjen"
+author: "Julia Roosjen"
+date: "2025-04-01"
+output: html_document
+---
+
+## Tabla de Contenidos
+
+## Abstract
+
+## Objetivos
+
+Los objetivos de esta pac es planificar y executar una versión simplificada de un proceso de analisi de datos metabolomicos. 
+
+Por lo que respecta al ensayo, el objetivo de este seria determinar las consequencias de un trasplante de microbiota fecal (FMT) a nivel metabolomico. Dado que el FMT se utiliza para restaurar la microbiota intestinal. Esta tecnica consiste en la administración de una solucion de materia fecal de un donante al tracto intestinal para modificar la composicion de la microbiota intestinal del receptor del trasplante. Este trasplante normamlente tiene efectos directos en el metabolismo intestinal. 
+
+<https://pmc.ncbi.nlm.nih.gov/articles/PMC4749851/>
+
+## Metodos
+
+Amb què heu treballat. Variarà segons el cas, però habitualment
+contindrà: origen (font) i naturalesa (tipus) de les dades, metodologia
+emprada, eines estadístiques i bioinformàtiques utilitzades, procediment
+general d'anàlisi, etc.
+
+El dataset escogido es **2023-UGrX-4MetaboAnalystTutorial**, del repositorio GitHub proporcionado. se ha optado por este dataset porque utiliza un tipo de analisis de los metabolitos con espectrometria de masas, una técnica con el que estoy familiarizada. 
+
+Este dataset puede encontrarse con el nombre asignado al proyecto (ID PR000002) i su DOI: 10.21228/M8WC7D, o bien en la base de datos de Metabolomics Workbench utilizando el paquete de Bioconductor `metabolomicsWorkbenchR`. 
+
+Para el analisis de los datos se han utilizado los paquetes de Bioconductor como `SummarizedExperiment` `metabolomicsWorkbenchR` `POMA` y sus librerias `SummarizedExperiment` `metabolomicsWorkbenchR` `POMA`, adicionalmente se ha utilizado el paquete `ggplot2` y `ggtext` junto a sus respectivas librerias además de las funciones basicas de R. 
+
+
+Para el analisis de los datos del ensayo se ha creado un objeto de clase SummarizedExperiment para que contuviera los datos y metadatos de nuestro ensayo.  
+
+`SummarizedExperiment` proporciona una estructura flexible para almacenar los multiples tipos de datos de experimentos de alto rendimiento. Esta clase se caracteriza por su flexibilidad ya que puede almacenar multiples tipos de datos experimentales en una sola estructura, permitiendo la gestión y almacenaje de metadatos para filas y columnas.
+
+También existia la posibilidad de realizar el analisis con `Expressionset`. Esta es también una clase definida en Bioconductor. Esta clase esta diseñada específicamente para almacenar datos de expresión génica teniendo una estructura muy rigida.
+
+La principal diferencia y razón por la cuan se ha utilizado el objeto de `SummarizedExperiment` en vez de `Expressionset`, es la especialización, siendo la primera más flexible y apta para otro tipo de datos que pueden no ser de expresion genica (como es nuestro caso). 
+
+
+## Resultados
+
+```{r include=FALSE}
+library(SummarizedExperiment)
+library(metabolomicsWorkbenchR)
+library(ggplot2)
+library(dplyr)
+library(POMA)
+library(ggtext)
+
+se = do_query(
+  context = 'study',
+  input_item = 'study_id',
+  input_value = 'ST000002',
+  output_item = 'SummarizedExperiment'
+)
+```
+
+Para realizar el analisis exploratorio de los datos se han seguido los siguientes puntos: 
+
+1. Carga y Exploración Inicial de los Datos
+
+2. Comprensión del Estudio y sus Variables
+
+3. Análisis y Procesamiento de los Datos
+
+
+En esta sección se realizara una breve descripción de los pasos seguidos en cada sección con especial atención al ultimo punto del analisis exploratorio (Análisis y Procesamiento de los Datos). 
+
+Para la carga y exploración inicial de los datos, se han cargado los datos en un objeto SummarizedExperiments con la función `do_query()`. Al llamar el objeto se (SummarizedExperiments) se obtiene un resumen de este a partir del cual obtenemos información como, que se trata de un conjunto de datos de dimensiones 142x12 (142 filas con 12 columnas), o las etiquetas de algunas columnas y filas, o algunas etiquetas de la metadata de columnas y filas.  
+
+Para tener una visión general de la metadata del conjunto y este mismo en forma de matriz se han utilizado funciones como `metadata()` o `assay()`
+La metadata del conjunto proporciona información sobre de donde se han extraido los datos (Metabolomics Workbench), el id del estudio (ST000002), el id del analisis (AN000002), el analisis realizado (GCMS positive ion mode), unidades de los datos (Peak height), o descripción del estudio (Intestinal Samples II pre/post transplantation). Por otro lado `assay(se)` nos devuelve una matriz con los datos del estudio que veremos a continuación. Dado que este estudio tiene 142 filas solo imprimiremos las primeras con `head()` para tener una visión general. 
+
+```{r}
+head(assay(se))
+```
+
+Con esta matriz se observan algunos de los niveles de los metabolitos (cada fila) en cada columna de las diferentes muestras que se han tomado en el estudio. Como se ha comentado antes estos niveles son la altura de los picos resultantes del MS del analisis GCMS positive ion mode correpondiente a cada metabolitos. Para obtener más información al respecto se pueden utilizar funciones como `rowData()` que muestra la metadata relacionada con las filas del conjunto de datos. Esta proporciona información sobre los nombres de los 142 metabolitos (ya que en el conjunto solo aparece el identificador) o sobre el nombre de referencia del metabolito. 
+
+A continuación se incluye una lista de algunos de los id de los metabolitos y posteriormente los metabolitos a los que pertenecen los id. Para ello se han utilizado funciones como `rownames(se)` `rowData(se)$metabolite_name` (con el nombre de la metadata de la fila, se obtienen todos sus valores).
+
+```{r}
+head(rownames(se), 20)
+head(rowData(se)$metabolite_name, 20)
+```
+Realizando los mismos pasos con la metadata de las columnas, esta nos indica que en las columnas de los datos se encuentra el nombre o etiqueta de las muestras, cada muestra tiene un identificador, y esta asociada a un identificador del estudio, un origen de la muestra (intestino) y un valor de tiempo en el que se toma la muestra siendo antes o despues de la tansplantación.
+
+Segun los datos del repositorio, deben de modificarse los niveles del factor de `Transplantation`, cambiandolos de before/after transplantation a Before/After. Adicionalmente a esto las etiquetas de las muestras deben de incluir una _B o _A en función del factor de tranplantación. A parte de los requerimientos del repositorio, se ha añadido un nombre al estudio (AN000002) con `assayNames()` al objeto `se` dado que `se` originalmente no tiene nombre de estudio. Para realizar estas modificaciones se han utilizado funciones como `colData()`para llamar a la metadata de las columnas entre otras funciones. 
+
+```{r include=FALSE}
+# Indicamos el nombre del ensayo 
+assayNames(se) <- "AN000002"
+
+
+# Se accede a la columna Transplantation con colData(se)$Transplantation.
+# Con factor() se convierte la columna en caso de que no lo sea en un factor y
+# redefinen los niveles (levels) del factor que posteriormente eran ("Before 
+# transplantation" y "After transplantation") y que ahora pasan a ser "Before" 
+# y "After".
+colData(se)$Transplantation <- factor(colData(se)$Transplantation,levels = 
+                                        c("Before transplantation", 
+                                          "After transplantation"),  
+                                      labels = c("Before", "After"))
+
+# Creamos nuevas etiquetas para las muestras
+# Se accede a los nombres de las columnas con colnames(se) y se redefinen como
+# la concatenación (realizada con paste0()) de los nombres antiguos con _A o _B 
+# en función de la columna Transplantation
+colnames(se) <- paste0(
+  colnames(se),
+  ifelse(colData(se)$Transplantation == "After", "_A", "_B")  
+)
+```
+
+Una vez realizadas y comprobadas las modificaciones se prosigue con el analisis utilizando funciones basicas de R para analizar la estructura y las implicaciones biologicas del estudio.
+A continuación se presenta un resumen de la estructura de los datos (incluida la metadata) obtenida con `str()`
+
+```{r}
+str(se)
+```
+
+Adicionalmente a la estructura de los datos tambén se realiza un resumen estadistico de los datso con `summary()`
+
+```{r}
+summary(assay(se))
+```
+Con el resumen estadístico se puede deducir una ligera tendencia de los niveles de los metabolitos a disminuir al realizarse el trasplante comparando las medias y los valores minimos de las muestras antes o depsues del trasplante. No obstante si se centra el analisis en los valores maximos se ven muy igualados. Se observa tambien por los quartiles una variabilidad más elevada en las muestras tomadas después del trasplante. 
+
+Para realizar un analisis mas completo  de los datos, se han normalizado dichos datos utilizando como referencia la información del siguiente enlace: <https://bioconductor.org/packages/release/bioc/vignettes/POMA/inst/doc/POMA-workflow.html> (Se encuentra dentro del temario)
+
+```{r include=FALSE}
+normalized <- se %>% 
+  PomaNorm(method = "log_pareto")
+```
+Con los datos normalizados se pueden generar graficos como boxplots viendo asi de forma más significativa las diferencias entre los datos.
+
+```{r}
+PomaBoxplots(normalized, x = "samples") 
+```
+
+A partir del boxplot se observan medianas similares y rangos intercuartílicos (IQR) comparables, lo cual indica que los niveles de metabolitos no han cambiado drásticamente tras el trasplante. Es cierto que existen diferencias muy ligeras entre las muestras tomadas después del trasplante (_A) con una disminución de los niveles de los metabolitos en comparación con las muestras antes del trasplante (_B), además, estas muestras (_A) son las que tienen un mayor numero de outliers. No obstante, **ambas** condiciones tienen outliers indicando la presencia de metabolitos con valores atipicos. Este suceso puede indicarnos que **algunos metabolitos podrian estar respondiendo de manera diferente al trasplante**.
+
+A continuación utilizando la formula `PomaOutliers()` se genera el siguiente gráfico de los outliers de los datos en función de la transplantación. Este gráfico representa los datos de las muestras tomadas antes (Before) y después (After) del trasplante, reducidos a dos dimensiones mediante un método de análisis multivariante. 
+
+```{r}
+PomaOutliers(normalized, outcome = "Transplantation")$polygon_plot
+```
+
+Según el grafico, las muestras tomadas antes del trasplante están agrupadas en un área más compacta y desplazada hacia la izquierda, mientras que aquellas muestras tomadas después de la transplantación estan más dispersas y desplazadas hacia la derecha.
+
+El hecho de que las muestras tomadas antes del trasplante esten agrupadas de forma más compacta podria sugerir que los metabolitos en este grupo tienen menos variabilidad. Por lo que respecta al grupo de muestras tomadas despues del trasplante, la dispersión de estas muestra que la variabilidad de los metabolitos estaria aumentando después del trasplante. 
+
+Como los dos grupos estan bien separados, se podria decir que el trasplante ha generado un cambio en el perfil metabólico. Este cambio ha implicado un aumento de la variabilidad al recibir el trasplante lo que sugiere que se estan produciendo respuestas individuales al trasplante. 
+
+
+Para seguir con el analisis de los datos en este punto se ha realizado un procesamiento de los datos para eliminar y ajustar los valores atípicos. Esta acción se ha realizado con la función `PomaOutliers()` basandose en la variable "Transplantation". Este conjunto de datos procesado se almacena en el objeto `processed`
+
+```{r}
+processed <- PomaOutliers(normalized, outcome = "Transplantation")$data
+```
+
+Una vez generado processed se generar el grafico de **análisis de componentes principales (PCA)** sobre los datos contenidos en el objeto `processed.` Este gráfico representa la variabilidad de los datos de metabolitos en dos dimensiones principales. 
+
+Para generar este gráfico, primero se crean los posibles valores de PCA. La función `prcomp()` se realiza el analisis de los componentes principales de PCA. Los componentes de PCA son obtenidos a partir de la matriz transpuesta (`t()`) de datos del `assay` del objeto `processed` (`assay(processed)`).
+
+```{r include=FALSE}
+#Generamos un objeto con los valores de PCA
+pca_values = prcomp(t(assay(processed)), scale. = TRUE)
+```
+Despues de esto se crea un dataframe `pca_dataframe` que contiene una columna con los nombres de las muestras del objeto `processed` (`colnames(assay(processed))`), junto a las coordenadas de cada muestra en el espacio definido por los dos componentes principales. 
+
+```{r include=FALSE}
+#creamos dataframe para visualizar resultados
+pca_dataframe <- data.frame(
+  sample = colnames(assay(processed)),
+  PC1 = pca_values$x[, 1],
+  PC2 = pca_values$x[, 2]
+)
+```
+Una vez realizado el dataframe se crea el grafico PCA con `ggplot`.
+
+```{r}
+ggplot(pca_dataframe, aes(x=PC1, y=PC2))+geom_point(
+  aes(color=processed$Transplantation)) + 
+  labs(title = "PCA: relación entre" , x = "PC1", y = "PC2") + theme_light()
+```
+
+Para el grafico PCA, los puntos están coloreados en función de la variable Transplantation, donde; el color azul corresponde a las muestras obtenidas antes del trasplante y el color rojo a las muestras obtenidas después del trasplante
+
+En este caso existen algunas muestras que indican que no hay una clara separación entre los metabolitos antes o depues del trasplante. Esto sugiere que el cambio metabólico post-trasplante no es drástico en todas las muestras, y por ende algunos individuos tienen perfiles metabólicos similares antes y después del trasplante. 
+
+Por otro lado, algunas muestras padecen un desplacamiento tas el trasplante, indicando que podrian estar ocurriendo algunos cambios metabólicos en individuos específicos. 
+
+De nuevo, y siguiendo con lo comentado en los graficos anteriores, el grafico PCA muestra una mayor dispersion en las muestras tomadas despues de el trasplante, indicando una mayor variabilidad en la respuesta metabólica post-trasplante.
+
+## Discusión
+
+
+
+## Conclusiones
+
+
+
+## Anexos
+
+Para ver algunos de los valores estadisticos del conjunto crearemos dos dataframes para las muestras tomadas antes y depues del trasplante.
+
+```{r}
+# Filtrar muestras por grupo usando colData(se)
+before_sample <- colnames(normalized)[colData(normalized)$Transplantation == 
+                                        "Before"]
+after_sample <- colnames(normalized)[colData(normalized)$Transplantation ==
+                                       "After"]
+
+# Creamos dos dataframes, uno para cada tipo de muestra. En cada dataframe 
+# incluiremos los valores de los metabolitos de las muestras
+before_dataframe <- assay(normalized)[, before_sample]  
+after_dataframe <- assay(normalized)[, after_sample]    
+
+# Convertir a dataframes
+before_dataframe <- as.data.frame(before_dataframe)
+colnames(before_dataframe) <- before_sample
+rownames(before_dataframe) <- rownames(normalized)
+
+after_dataframe <- as.data.frame(after_dataframe)
+colnames(after_dataframe) <- after_sample
+rownames(after_dataframe) <- rownames(normalized)
+
+# Con un head() vemos los primeros 6 valores de los aminoacidos de las muestras
+head(before_dataframe)
+head(after_dataframe)
+
+```
+
+Una vez tenemos los dataframes creados transpondremos las matrices (`t()`), para tener en las columnas los metabolitos y que cada fila sea la muestra.
+
+```{r}
+before_dataframe_t <- t(before_dataframe)
+after_dataframe_t <- t(after_dataframe)
+```
+
+Asignaremos los nombres o etiquetas de los metabolitos (que extraeremos de `rowData(se)$metabolite_name`) a las columnas de los dataframes. Finalmente realizaremos un summary de ambos dataframes para ver los valores estadisticos normalizados de cada metabolito.
+```{r}
+metabolitos <- rowData(se)$metabolite_name
+colnames(before_dataframe_t) <- metabolitos
+colnames(after_dataframe_t) <- metabolitos
+summary(before_dataframe_t)
+summary(after_dataframe_t)
+```
+
+Estos valores estadisticos podrian caompararse para generar conclusiones sobre cual es el metabolito cuyos niveles sufren un mayor cambio l realizar el trasplante. También podriamos realizar un test ANOVA de los datos (transformandolos) para averigual que metabolitosse ven mas o menos influenciados por el transplante. 
+
+
+## Referencias
+
+quí haureu d'incloure un enllaç al repositori de GitHub que
+conté el codi que heu utilitzat per abordar l'anàlisi
