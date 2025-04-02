@@ -1,35 +1,51 @@
 ---
-title: "PAC 1_Informe _Julia Roosjen"
+title: "Informe_PAC1"
 author: "Julia Roosjen"
 date: "2025-04-01"
-output: html_document
+output: 
+  pdf_document:
+    toc: true
+    toc_depth: 3
+  html_document:
+    toc: true
+editor_options:
+  markdown:
+    wrap: 72
+fontsize: 10pt
+linestretch: 1
+header-includes:
+- \usepackage{titling}
+- "\\pretitle{\\vspace{-1cm}\\begin{center}\\huge\\linespread{0.2}}"
+- "\\posttitle{\\par\\end{center}\\vspace{-2em}}"
+- \preauthor{\begin{center}\large\itshape\linespread{0.4}}
+- "\\postauthor{\\par\\end{center}\\vspace{-2em}}"
+- \predate{\begin{center}\large\itshape\linespread{0.4}}
+- \usepackage{tocloft}
+- "\\setlength{\\cftbeforetoctitleskip}{-0.5em}"
+- \setlength{\cftaftertoctitleskip}{0.5em}
+- \renewcommand{\contentsname}{\centering Contents}
 ---
-
-## Tabla de Contenidos
-
+## Tabla de contenido
 ## Abstract
+
+En este informe se evaluan los efectos metabolómicos del trasplante de microbiota fecal (FMT) utilizando técnicas de análisis basadas en SummarizedExperiments. Estas herramientas permiten integrar y procesar datos metabolómicos de manera eficiente, facilitando la comparación entre muestras. Los resultados muestran que, aunque las medianas y rangos intercuartílicos de los niveles de metabolitos son similares, se identifica una disminución muy ligera de los niveles de los metabolitos del intestino despues de el FMT, junto a un aumento en la variabilidad metabólica. Este fenómeno sugiere respuestas individuales al FMT, lo que resalta su potencial para modificar perfiles metabólicos en función de las características específicas del receptor.
 
 ## Objetivos
 
-Los objetivos de esta pac es planificar y executar una versión simplificada de un proceso de analisi de datos metabolomicos. 
+Los objetivos de esta pac es planificar y ejecutar una versión simplificada de un proceso de analisi de datos metabolomicos. Este analisis debe de incluir la carga y la primera exploración de los datos, una debida comprensión del estudio que se esta analizando y sus variables, y el analisis y procesamiento de datos mediante herramientas de analisis como Boxplots, o PCA.
 
-Por lo que respecta al ensayo, el objetivo de este seria determinar las consequencias de un trasplante de microbiota fecal (FMT) a nivel metabolomico. Dado que el FMT se utiliza para restaurar la microbiota intestinal. Esta tecnica consiste en la administración de una solucion de materia fecal de un donante al tracto intestinal para modificar la composicion de la microbiota intestinal del receptor del trasplante. Este trasplante normamlente tiene efectos directos en el metabolismo intestinal. 
-
-<https://pmc.ncbi.nlm.nih.gov/articles/PMC4749851/>
+Por lo que respecta al ensayo, el objetivo de este seria determinar las consequencias de un trasplante de microbiota fecal (FMT) a nivel metabolomico. Dado que el FMT se utiliza para restaurar la microbiota intestinal. Esta técnica consiste en la administración de una solucion de materia fecal de un donante al tracto intestinal para modificar la composicion de la microbiota intestinal del receptor del trasplante. Este trasplante normamlente tiene efectos directos en el metabolismo intestinal.[1]
 
 ## Metodos
-
-Amb què heu treballat. Variarà segons el cas, però habitualment
-contindrà: origen (font) i naturalesa (tipus) de les dades, metodologia
-emprada, eines estadístiques i bioinformàtiques utilitzades, procediment
-general d'anàlisi, etc.
 
 El dataset escogido es **2023-UGrX-4MetaboAnalystTutorial**, del repositorio GitHub proporcionado. se ha optado por este dataset porque utiliza un tipo de analisis de los metabolitos con espectrometria de masas, una técnica con el que estoy familiarizada. 
 
 Este dataset puede encontrarse con el nombre asignado al proyecto (ID PR000002) i su DOI: 10.21228/M8WC7D, o bien en la base de datos de Metabolomics Workbench utilizando el paquete de Bioconductor `metabolomicsWorkbenchR`. 
 
-Para el analisis de los datos se han utilizado los paquetes de Bioconductor como `SummarizedExperiment` `metabolomicsWorkbenchR` `POMA` y sus librerias `SummarizedExperiment` `metabolomicsWorkbenchR` `POMA`, adicionalmente se ha utilizado el paquete `ggplot2` y `ggtext` junto a sus respectivas librerias además de las funciones basicas de R. 
+Todos losarchivos relacinados con este informe se econtraran en el repositorio github con el siguiente enlace:
+<https://github.com/jroosjen/Roosjen_Teixido_Julia_PEC1>
 
+Para el analisis de los datos se han utilizado los paquetes de Bioconductor como `SummarizedExperiment` `metabolomicsWorkbenchR` `POMA` y sus librerias `SummarizedExperiment` `metabolomicsWorkbenchR` `POMA`, adicionalmente se ha utilizado el paquete `ggplot2` y `ggtext` junto a sus respectivas librerias además de las funciones basicas de R. 
 
 Para el analisis de los datos del ensayo se ha creado un objeto de clase SummarizedExperiment para que contuviera los datos y metadatos de nuestro ensayo.  
 
@@ -38,7 +54,6 @@ Para el analisis de los datos del ensayo se ha creado un objeto de clase Summari
 También existia la posibilidad de realizar el analisis con `Expressionset`. Esta es también una clase definida en Bioconductor. Esta clase esta diseñada específicamente para almacenar datos de expresión génica teniendo una estructura muy rigida.
 
 La principal diferencia y razón por la cuan se ha utilizado el objeto de `SummarizedExperiment` en vez de `Expressionset`, es la especialización, siendo la primera más flexible y apta para otro tipo de datos que pueden no ser de expresion genica (como es nuestro caso). 
-
 
 ## Resultados
 
@@ -122,14 +137,14 @@ A continuación se presenta un resumen de la estructura de los datos (incluida l
 str(se)
 ```
 
-Adicionalmente a la estructura de los datos tambén se realiza un resumen estadistico de los datso con `summary()`
+Adicionalmente a la estructura de los datos también se realiza un resúmen estadístico de los datos con `summary()`
 
 ```{r}
 summary(assay(se))
 ```
 Con el resumen estadístico se puede deducir una ligera tendencia de los niveles de los metabolitos a disminuir al realizarse el trasplante comparando las medias y los valores minimos de las muestras antes o depsues del trasplante. No obstante si se centra el analisis en los valores maximos se ven muy igualados. Se observa tambien por los quartiles una variabilidad más elevada en las muestras tomadas después del trasplante. 
 
-Para realizar un analisis mas completo  de los datos, se han normalizado dichos datos utilizando como referencia la información del siguiente enlace: <https://bioconductor.org/packages/release/bioc/vignettes/POMA/inst/doc/POMA-workflow.html> (Se encuentra dentro del temario)
+Para realizar un analisis mas completo  de los datos, se han normalizado dichos datos utilizando como referencia la información del siguiente enlace [2] (Se encuentra dentro del temario)
 
 ```{r include=FALSE}
 normalized <- se %>% 
@@ -162,7 +177,7 @@ Para seguir con el analisis de los datos en este punto se ha realizado un proces
 processed <- PomaOutliers(normalized, outcome = "Transplantation")$data
 ```
 
-Una vez generado processed se generar el grafico de **análisis de componentes principales (PCA)** sobre los datos contenidos en el objeto `processed.` Este gráfico representa la variabilidad de los datos de metabolitos en dos dimensiones principales. 
+Una vez generado processed se generar el grafico de **análisis de componentes principales (PCA)** sobre los datos contenidos en el objeto `processed.` Este gráfico representa la variabilidad de los datos de metabolitos en dos dimensiones principales. Para generarlo se ha utilizado el siguiente enlace como referencia.[4]
 
 Para generar este gráfico, primero se crean los posibles valores de PCA. La función `prcomp()` se realiza el analisis de los componentes principales de PCA. Los componentes de PCA son obtenidos a partir de la matriz transpuesta (`t()`) de datos del `assay` del objeto `processed` (`assay(processed)`).
 
@@ -198,17 +213,27 @@ De nuevo, y siguiendo con lo comentado en los graficos anteriores, el grafico PC
 
 ## Discusión
 
+El trasplante de microbiota fecal (FMT) es una tecnica prometedora para restaurar la microbiota intestinal abordando problemas metabólicos y gastrointestinales.
 
+Los analísis gráficos realizados sugieren que el FMT genera cambios muy ligeros en el perfil metabólico aumentando la variabilidad después del trasplante. Este fenómeno refleja respuestas individuales al tratamiento, la cual cosa coincide con investigaciones previas al respecto.[5]
+
+El aumento de esta variabilidad metabólica podría estar indicando una mayor plasticidad metabólica o ajustes individuales en respuesta a las nuevas condiciones. Este hecho es relevante en el tratamiento de enfermedades metabolicas: No obstante dado que los cambios son tan ligeros aún hay la necesidad de personalizar los tratamientos según las características específicas del receptor. 
+
+Algunos inconvenientes que tiene el estudio es la Variabilidad individual, dado que como se ha observado en los gráficos, la variablilidad metabólica despues del trasplante es significativa. Este hecho puede deberse a diferentes factores, como; la composición inicial de la microbiota del receptor, las características del donante, y otras condiciones fisiológicas específicas que no se han tenido en cuenta en este estudio.
+
+También existe una falta de seguimiento longitudinal. Esto significa que, los datos analizados se centran en un solo instante antes y depués del trasplante, pero los efectos metabólicos de fMT evolucionan con el tiempo. El estudio realizado limita la comprensión completa del impacto del trasplante a largo plazo.
 
 ## Conclusiones
 
-
+El trabajo realizado aporta evidencia sobre los efectos de FMT a nivel metabolómico, teniendo potencial para la modificación de perfiles metabólicos. No obstante se requieren de estudios más amplios para comprender mejor las interacciones entre microbiota y metabolismo, además de la optimización en la selección de donantes y receptores.
 
 ## Anexos
 
-Para ver algunos de los valores estadisticos del conjunto crearemos dos dataframes para las muestras tomadas antes y depues del trasplante.
+Se han realizado unos ensayo extras a los descritos que estan expuestos a continuación:
 
-```{r}
+Para ver algunos de los valores estadisticos del conjunto se han creado dos dataframes para las muestras tomadas antes y depues del trasplante.
+
+```{r include=FALSE}
 # Filtrar muestras por grupo usando colData(se)
 before_sample <- colnames(normalized)[colData(normalized)$Transplantation == 
                                         "Before"]
@@ -234,15 +259,13 @@ head(before_dataframe)
 head(after_dataframe)
 
 ```
-
-Una vez tenemos los dataframes creados transpondremos las matrices (`t()`), para tener en las columnas los metabolitos y que cada fila sea la muestra.
-
-```{r}
+Una vez creados los dataframes se transponen las matrices (`t()`), para tener en las columnas los metabolitos y que cada fila sea la muestra.
+```{r include=FALSE}
 before_dataframe_t <- t(before_dataframe)
 after_dataframe_t <- t(after_dataframe)
 ```
 
-Asignaremos los nombres o etiquetas de los metabolitos (que extraeremos de `rowData(se)$metabolite_name`) a las columnas de los dataframes. Finalmente realizaremos un summary de ambos dataframes para ver los valores estadisticos normalizados de cada metabolito.
+Se asignan los nombres o etiquetas de los metabolitos (que se extraen de `rowData(se)$metabolite_name`) a las columnas de los dataframes. Finalmente se realiza un summary de ambos dataframes para ver los valores estadísticos normalizados de cada metabolito.
 ```{r}
 metabolitos <- rowData(se)$metabolite_name
 colnames(before_dataframe_t) <- metabolitos
@@ -251,10 +274,27 @@ summary(before_dataframe_t)
 summary(after_dataframe_t)
 ```
 
-Estos valores estadisticos podrian caompararse para generar conclusiones sobre cual es el metabolito cuyos niveles sufren un mayor cambio l realizar el trasplante. También podriamos realizar un test ANOVA de los datos (transformandolos) para averigual que metabolitosse ven mas o menos influenciados por el transplante. 
+Estos valores estadísticos podrian compararse para generar conclusiones sobre cual es el metabolito cuyos niveles sufren un mayor cambio al realizar el trasplante. También podriamos realizar un test ANOVA de los datos (transformandolos) para averiguar que metabolitos se ven más o menos influenciados por el trasplante. 
+
+Una vez se ha comprobado toda la información se guarda el objeto de clase SummarizedExperiment en un repositorio en formato binario (.Rda)
+```{r}
+save(se, file = "SummarizedExperiment_PAC1")
+```
 
 
 ## Referencias
 
-quí haureu d'incloure un enllaç al repositori de GitHub que
-conté el codi que heu utilitzat per abordar l'anàlisi
+[1] Enlace al repositorio Github para obtener los datos:
+<https://github.com/nutrimetabolomics/metaboData/tree/main/Datasets/2023-UGrX-4MetaboAnalystTutorial>
+
+[2] Enlace para más información sobre la FMT
+<https://pmc.ncbi.nlm.nih.gov/articles/PMC4749851/>
+
+[3] Enlace para información sobre la generación de los gráficos y procesado de datos
+<https://bioconductor.org/packages/release/bioc/vignettes/POMA/inst/doc/POMA-workflow.html>
+
+[4] Enlace para la creación de PCA
+<https://rpubs.com/cristina_gil/pca>
+
+[5] Enlace para más información sobre la FMT
+<https://www.csic.es/es/actualidad-del-csic/determinan-las-claves-del-exito-del-trasplante-de-microbiota-intestinal-en-personas-con-sindrome-metabolico>
